@@ -1,5 +1,5 @@
-# ConsenSys-academy
-ConsenSys academy course 
+# ConsenSys Academy
+ConsenSys academy course projects
 
 1. Splitter  
 
