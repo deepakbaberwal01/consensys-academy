@@ -3,7 +3,6 @@ pragma solidity ^0.4.10;  // require added
 contract Splitter
 {
     address public owner;
-    bool public is_killed;
 
     struct Balance
     {
@@ -23,7 +22,6 @@ contract Splitter
     returns (bool)
     {
         require(msg.value > 0);
-        require(is_killed == false);
 
         if (user_address_map[msg.sender] == false) {  // add new user
             user_address_map[msg.sender] = true;
@@ -33,7 +31,7 @@ contract Splitter
         return Split(msg.value, msg.sender);
     }
 
-    function Split(uint256 amount, address sender)
+    function Split(uint256 amount, address sender) private
     returns (bool)
     {
         require(amount > 0);
@@ -76,15 +74,11 @@ contract Splitter
         return user_balances.length;
     }
 
-    function killMe()
+    function KillMe()
     returns (bool)
     {
         require(msg.sender == owner);
-        require(is_killed == false);
 
         suicide(owner);
-        is_killed = true;
-
-        return true;
     }
 }
