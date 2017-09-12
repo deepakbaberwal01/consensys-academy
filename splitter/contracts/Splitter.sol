@@ -9,7 +9,10 @@ contract Splitter
       address user_address;
       uint256 amount;
     }
-    Balance[] user_balances;
+
+    uint constant USER_LIMIT = 5;
+    Balance[5] public user_balances;
+    uint public user_balances_size;
 
     mapping (address => bool) user_address_map;
 
@@ -24,8 +27,11 @@ contract Splitter
         require(msg.value > 0);
 
         if (user_address_map[msg.sender] == false) {  // add new user
+            require(user_balances_size <= USER_LIMIT); // limit reached
+
             user_address_map[msg.sender] = true;
-            user_balances.push(Balance(msg.sender, msg.value));
+            user_balances[user_balances_size] = Balance(msg.sender, msg.value);
+            user_balances_size++;
         }
 
         return Split(msg.value, msg.sender);
@@ -35,43 +41,23 @@ contract Splitter
     returns (bool)
     {
         require(amount > 0);
-        if (user_balances.length == 1) return true; // no need to split
+        if (user_balances_size == 1) return true; // no need to split
 
-        uint share_amount = amount / (user_balances.length - 1);
-        require(share_amount > 0);
+        uint share_amount = amount / (user_balances_size - 1);
+        require(share_amount > 0);                // should be positive amount
 
-        for (uint i = 0; i < user_balances.length; i++)
+        for (uint i = 0; i < user_balances_size; i++)
         {
             if (user_balances[i].user_address == sender)
             {
                 user_balances[i].amount +=
-                  (amount - share_amount*user_balances.length);  // refund remainder
+                  (amount - share_amount*user_balances_size);  // refund remainder
                 continue;
             }
             user_balances[i].amount += share_amount;
         }
 
         return true;
-    }
-
-    function GetBalance(address user_address)
-    constant returns (uint)
-    {
-        if (user_address_map[user_address] == false) return 0;
-
-        for (uint i = 0; i < user_balances.length; i++)
-        {
-            if (user_balances[i].user_address == user_address)
-            {
-              return user_balances[i].amount;
-            }
-        }
-    }
-
-    function GetCountAccounts()
-    public constant returns (uint)
-    {
-        return user_balances.length;
     }
 
     function KillMe()
